@@ -2,6 +2,7 @@ import pyxel
 
 SCENE_TITLE = 0
 SCENE_PLAY = 1
+SCENE_GAMEOVER = 2
 
 TILE_SIZE = 16
 
@@ -25,6 +26,7 @@ class Player:
         self.y = y
         self.w = PLAYER_WIDTH
         self.h = PLAYER_HEIGHT
+        self.health = 3
 
     def update(self):
         if pyxel.btn(pyxel.KEY_RIGHT) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_DPAD_RIGHT):
@@ -86,6 +88,7 @@ class App:
         pyxel.sounds[0].pcm("sounds/background.ogg")
         pyxel.sounds[1].pcm("sounds/gameplay.ogg")
         pyxel.sounds[2].pcm("sounds/eat.ogg")
+        pyxel.sounds[3].pcm("sounds/gameover.ogg")
         pyxel.channels[1].gain = 1
 
         # Instance Main Classes
@@ -153,6 +156,7 @@ class App:
             iteration_value = 3
         elif self.current_apple == self.collectables[3]:  # ROTTEN_APPLE
             iteration_value = -5
+            self.update_player_health(add_live=False)
         else:  # REGULAR_APPLE
             iteration_value = 1
 
@@ -164,13 +168,31 @@ class App:
         ]
         self.current_apple.update_position()
 
+    def update_player_health(self, add_live=True):
+        if self.player.health <= 0:
+            self.scene = SCENE_GAMEOVER
+            pyxel.play(0, 3, loop=True)  # GAMEOVER SOUNDTRACK
+
+        if add_live:
+            if self.player.health < 3:
+                if self.current_apple == self.collectables[2]:  # CRISTAL_APPLE
+                    self.player.health += 1
+        else:
+            self.player.health -= 1
+
+    def reset_game_values(self):
+        self.game_score = 0
+        self.player.health = 3
+        self.update_current_apple()
+
     def check_collision(self):
         x_axis = abs(self.player.x - self.current_apple.x) < PLAYER_WIDTH
         y_axis = abs(self.player.y - self.current_apple.y) < PLAYER_HEIGHT
 
         if x_axis and y_axis:
-            pyxel.play(1, 2)
+            pyxel.play(1, 2)  # EAT SOUND
             self.update_score()
+            self.update_player_health()
             self.update_current_apple()
         if self.current_apple.y >= pyxel.height:
             self.update_current_apple()
@@ -194,11 +216,13 @@ class App:
             self.update_title_scene()
         elif self.scene == SCENE_PLAY:
             self.update_play_scene()
+        elif self.scene == SCENE_GAMEOVER:
+            self.update_gameover_scene()
 
     def update_title_scene(self):
         if pyxel.btnp(pyxel.KEY_RETURN) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_A):
             self.scene = SCENE_PLAY
-            pyxel.play(0, 1, loop=True)
+            pyxel.play(0, 1, loop=True)  # GAMEPLAY SOUNDTRACK
 
     def update_play_scene(self):
         self.player.update()
@@ -206,6 +230,12 @@ class App:
         self.scroll_y = (self.scroll_y + 0.5) % TILE_SIZE if self.stop_scrolling else 0
         self.check_collision()
         # self.update_stats()
+
+    def update_gameover_scene(self):
+        if pyxel.btnp(pyxel.KEY_RETURN) or pyxel.btnp(pyxel.GAMEPAD1_BUTTON_A):
+            self.reset_game_values()
+            self.scene = SCENE_PLAY
+            pyxel.play(0, 1, loop=True)  # GAMEPLAY SOUNDTRACK
 
     def draw(self):
         pyxel.cls(0)
@@ -215,6 +245,8 @@ class App:
             self.draw_title_scene()
         elif self.scene == SCENE_PLAY:
             self.draw_play_scene()
+        elif self.scene == SCENE_GAMEOVER:
+            self.draw_gameover_scene()
 
     def draw_title_scene(self):
         start_title = "APPLE FALL"
@@ -285,6 +317,46 @@ class App:
             ((pyxel.width - score_width) // 2) + 1, 2, score_text, pyxel.COLOR_DARK_BLUE
         )
         pyxel.text((pyxel.width - score_width) // 2, 2, score_text, pyxel.COLOR_WHITE)
+
+    def draw_gameover_scene(self):
+        gameover_title = "GAME OVER"
+        start_title_width = len(gameover_title) * pyxel.FONT_WIDTH
+        pyxel.text(
+            ((pyxel.width - start_title_width) // 2) + 1,
+            30,
+            gameover_title,
+            pyxel.COLOR_RED,
+        )
+        pyxel.text(
+            (pyxel.width - start_title_width) // 2,
+            30,
+            gameover_title,
+            pyxel.COLOR_WHITE,
+        )
+
+        play_text = "(A / ENTER) to play!"
+        play_text_width = len(play_text) * pyxel.FONT_WIDTH
+        pyxel.text(
+            ((pyxel.width - play_text_width) // 2) + 1,
+            50,
+            play_text,
+            pyxel.COLOR_DARK_BLUE,
+        )
+        pyxel.text(
+            (pyxel.width - play_text_width) // 2, 50, play_text, pyxel.COLOR_WHITE
+        )
+
+        quit_text = "(B / ESC) to quit"
+        quit_text_width = len(quit_text) * pyxel.FONT_WIDTH
+        pyxel.text(
+            ((pyxel.width - quit_text_width) // 2) + 1,
+            60,
+            quit_text,
+            pyxel.COLOR_DARK_BLUE,
+        )
+        pyxel.text(
+            (pyxel.width - quit_text_width) // 2, 60, quit_text, pyxel.COLOR_WHITE
+        )
 
 
 if __name__ == "__main__":
