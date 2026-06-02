@@ -318,6 +318,11 @@ class App:
         )
         pyxel.text((pyxel.width - score_width) // 2, 2, score_text, pyxel.COLOR_WHITE)
 
+        player_health = f"x{self.player.health}"
+        pyxel.text(21, 5, player_health, pyxel.COLOR_DARK_BLUE)
+        pyxel.text(20, 5, player_health, pyxel.COLOR_WHITE)
+        pyxel.blt(2, 2, 0, 96, 0, 16, 16, 0)
+
     def draw_gameover_scene(self):
         gameover_title = "GAME OVER"
         start_title_width = len(gameover_title) * pyxel.FONT_WIDTH
