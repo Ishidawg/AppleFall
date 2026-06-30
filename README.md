@@ -1,4 +1,8 @@
-# AppleFall 🍎️
+<div align="center">
+  <img src="https://i.imgur.com/SUkIp6G.png" alt="Basket image" />
+  	<h1>AppleFall</h1>
+</div>
+
 > A demo game used to learn more about pyxel and python.
 
 I'm planning to join some game jams and wanted to practice Python. Pyxel team can showcase their retro game engine much better than I could, but the real catch of using it is the intentional limitations: limited asset loading, limited audio banks, and TRUE 16-bit _(colors)_.
